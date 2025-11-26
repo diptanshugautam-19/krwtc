@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>KSRTC — Official Website Simulation (Demo)</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --primary-blue:#005b9f;
+      --action-orange:#ff7f00;
+      --highlight-cyan:#00ADEF;
+      --text-dark:#333;
+      --bg-light:#f4f4f4;
+      --border-color:#e0e0e0;
+      --success-green:#28a745;
+    }
+
+    *{box-sizing:border-box;margin:0;padding:0;font-family:Roboto,system-ui,-apple-system,"Segoe UI",Arial,Helvetica,sans-serif}
+    html,body{height:100%}
+    body{background:var(--bg-light);color:var(--text-dark);min-height:100vh;overflow-x:hidden;line-height:1.35;-webkit-font-smoothing:antialiased}
+
+    /* Utility bar and header */
+    .utility-bar{background:#fff;padding:8px 20px;display:flex;justify-content:space-between;align-items:center;font-size:13px;border-bottom:1px solid #eee}
+    .utility-bar a{color:inherit;text-decoration:none;opacity:.95}
+    .main-header{background:#fff;padding:12px 20px;display:flex;justify-content:space-between;align-items:center;height:auto;box-shadow:0 2px 10px rgba(0,0,0,0.04);position:relative}
+    .logo-section img{height:60px;display:block}
+    .header-actions{display:flex;gap:18px;align-items:center}
+    .action-item{display:flex;flex-direction:column;align-items:center;font-size:13px;color:var(--primary-blue);cursor:pointer}
+    .action-item i{font-size:20px;margin-bottom:6px}
+
+    /* Navigation */
+    nav.navbar{background:var(--primary-blue);color:#fff;padding:0 20px;height:48px;display:flex;align-items:center;font-weight:600}
+    nav .nav-links{display:flex;gap:18px;list-style:none}
+    nav .nav-links a{display:inline-block;padding:10px 6px;color:inherit}
+
+    /* Hero and booking widget */
+    .hero-section{position:relative;min-height:460px;background:url('https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/NH_66_near_Maravanthe.jpg/1200px-NH_66_near_Maravanthe.jpg') center/cover no-repeat;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;padding:36px 20px 80px}
+    .hero-dimmer{position:absolute;inset:0;background:linear-gradient(rgba(0,0,0,0.08), rgba(0,0,0,0.12))}
+    .bus-overlay{position:absolute;bottom:120px;width:86%;max-width:1100px;height:240px;background:url('https://upload.wikimedia.org/wikipedia/commons/thumb/6/63/KSRTC_Airavat_Club_Class.png/1200px-KSRTC_Airavat_Club_Class.png') center bottom/contain no-repeat;filter:drop-shadow(0 12px 18px rgba(0,0,0,0.28));z-index:2;opacity:.96}
+
+    .booking-widget{position:relative;z-index:10;width:100%;max-width:1200px;background:#fff;border-radius:10px;box-shadow:0 12px 30px rgba(0,0,0,0.12);overflow:visible;margin:0 auto;transform:translateY(40px)}
+    .widget-tabs{display:flex;align-items:center}
+    .tab{padding:12px 20px;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;background:var(--action-orange);color:#fff;border-radius:6px}
+    .tab.active{background:#fff;color:#111;border-top:4px solid #111;padding-top:8px}
+
+    /* Search form: use grid for consistent alignment */
+    .search-form{padding:18px 20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr)) 220px;gap:12px;align-items:end}
+
+    .input-group{border:1px solid #e4e4e4;padding:10px 12px;border-radius:8px;position:relative;background:#fff;display:flex;flex-direction:column;justify-content:center}
+    .input-group label{font-size:12px;color:#666;margin-bottom:6px;font-weight:600}
+    .main-input{border:none;outline:none;width:100%;font-size:15px;font-weight:600;color:#222;background:transparent;padding:6px 0}
+    .search-btn{background:var(--action-orange);color:#fff;border:none;padding:12px 18px;height:48px;border-radius:8px;font-weight:800;cursor:pointer;align-self:stretch}
+
+    .search-btn:focus,.btn-select-seat:focus,.btn-proceed:focus,.modal-btn:focus{outline:3px solid rgba(0,123,255,0.14);outline-offset:2px}
+
+    .custom-dropdown-container{display:none;position:absolute;top:100%;left:0;width:100%;background:#fff;border:1px solid var(--highlight-cyan);z-index:1200;max-height:220px;overflow:auto;border-radius:6px;box-shadow:0 6px 18px rgba(0,0,0,0.08)}
+    .city-option{padding:10px 12px;font-size:14px;cursor:pointer;border-bottom:1px solid #f0f0f0}
+    .city-option:hover{background:#eaf6fb}
+
+    #view-results{display:none;padding:36px 20px 80px}
+    .modify-search-bar{background:#fff;padding:12px 18px;display:flex;gap:12px;align-items:center;box-shadow:0 6px 18px rgba(0,0,0,0.04);margin-bottom:18px;border-radius:8px}
+    .mod-input{border:1px solid #e6e6e6;padding:10px 12px;border-radius:8px;font-size:14px;font-weight:700;flex:1;display:flex;justify-content:space-between;align-items:center}
+    .btn-modify{background:var(--action-orange);color:#fff;border:none;padding:10px 16px;border-radius:8px;font-weight:800;cursor:pointer}
+
+    .results-container{display:flex;max-width:1200px;margin:0 auto;gap:20px;padding:0 12px}
+    .filters-sidebar{width:280px;background:#fff;padding:16px;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,0.04);align-self:flex-start}
+    .results-feed{flex:1}
+
+    .filter-group{margin-bottom:18px;border-bottom:1px solid #f3f3f3;padding-bottom:12px}
+    .filter-title{font-weight:800;font-size:13px;margin-bottom:8px;display:flex;justify-content:space-between}
+    .filter-option{display:flex;align-items:center;gap:8px;font-size:13px;color:#555;margin-bottom:8px}
+
+    .bus-card{background:#fff;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,0.06);margin-bottom:18px;overflow:hidden}
+    .bus-card-header{padding:16px;display:grid;grid-template-columns:1.6fr repeat(4,minmax(110px,1fr));gap:12px;align-items:center;border-bottom:1px solid #f3f3f3}
+    .bus-title{color:var(--action-orange);font-weight:800;font-size:15px;display:flex;align-items:center;gap:8px}
+    .bus-type{font-size:12px;color:#888;text-transform:uppercase;margin-top:6px}
+    .time-loc{font-size:15px;font-weight:800;color:#222}
+    .time-date{font-size:12px;color:#888}
+    .duration-line{font-size:12px;color:#888;text-align:center;height:16px;margin-bottom:6px}
+    .price-tag{font-size:18px;font-weight:800;color:#111;text-align:right}
+    .seats-left{font-size:12px;color:#666;text-align:right;margin-top:6px}
+    .btn-select-seat{background:var(--action-orange);color:#fff;border:1px solid var(--action-orange);padding:8px 12px;font-size:13px;font-weight:800;border-radius:6px;cursor:pointer}
+
+    .seat-selection-area{background:#f9fcff;padding:18px;border-top:1px solid #eee;display:none}
+    .seat-layout-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+    .berth-container{border:1px solid #e8e8e8;background:#fff;padding:14px;border-radius:8px;position:relative;min-height:160px}
+    .berth-label{position:absolute;left:-18px;top:50%;transform:rotate(-90deg) translateY(-50%);font-size:12px;color:#888;font-weight:800}
+    .bus-deck{display:flex;flex-direction:column;gap:10px;margin-left:6px}
+    .seat-row{display:flex;gap:10px}
+    .seat{min-width:46px;min-height:34px;border:1px solid var(--success-green);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;cursor:pointer;position:relative;padding:6px}
+    .seat.sleeper{min-width:88px}
+    .seat.available{background:#fff;color:#333}
+    .seat.booked{background:#e9e9e9;border-color:#e9e9e9;cursor:not-allowed;color:#777}
+    .seat.selected{background:var(--primary-blue);border-color:var(--primary-blue);color:#fff}
+    .seat.ladies{border-color:#e91e63}
+
+    .steering-wheel{text-align:right;font-size:18px;color:#ccc;margin-bottom:8px}
+
+    .logistics-panel{background:#fff;border:1px solid #eee;padding:12px;border-radius:8px}
+    .dropdown-select{width:100%;padding:10px;border:1px solid #e6e6e6;border-radius:8px;margin-bottom:10px;font-size:14px}
+
+    .selection-footer{margin-top:12px;background:#eef7ff;padding:12px;display:flex;justify-content:space-between;align-items:center;border-radius:8px}
+    .total-price{font-size:16px;font-weight:800}
+    .btn-proceed{background:var(--action-orange);color:#fff;border:none;padding:10px 16px;font-weight:800;font-size:14px;cursor:pointer;border-radius:8px}
+
+    .customer-details-panel{display:none;margin-top:12px;background:#fff;border:1px solid #eee;padding:14px;border-radius:8px}
+    .auth-toggle{display:flex;gap:20px;margin-bottom:12px;font-size:14px;font-weight:700}
+    .form-row{display:flex;gap:12px;margin-bottom:12px}
+    .form-group{flex:1}
+    .form-group label{display:block;font-size:13px;color:#666;margin-bottom:6px}
+    .form-group input, .form-group select{width:100%;padding:10px;border:1px solid #e6e6e6;border-radius:8px}
+
+    /* Payment page */
+    .payment-page{display:none;margin-top:12px;background:#fff;border:1px solid #eee;padding:14px;border-radius:8px}
+    .payment-methods{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px}
+    .payment-method{border:2px solid #e6e6e6;padding:12px;border-radius:8px;cursor:pointer;text-align:center;transition:all 0.2s}
+    .payment-method:hover{border-color:var(--action-orange);background:#fff9f0}
+    .payment-method.active{border-color:var(--action-orange);background:#ffefd5}
+    .payment-method i{font-size:24px;margin-bottom:8px;display:block;color:var(--action-orange)}
+    .payment-method-label{font-size:13px;font-weight:700;color:#333}
+
+    .billing-section{background:#f9f9f9;padding:12px;border-radius:8px;margin-bottom:14px}
+    .billing-section h4{font-size:14px;font-weight:800;margin-bottom:10px;color:#333}
+    .upi-qr{max-width:260px;width:100%;display:block;margin:8px auto;border-radius:8px;border:1px solid #e6e6e6;padding:6px;background:#fff}
+    .payment-summary{background:#eef7ff;padding:12px;border-radius:8px;margin-bottom:14px;border-left:4px solid var(--action-orange)}
+    .summary-row{display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px}
+    .summary-row:last-child{font-weight:800;font-size:15px;color:#111}
+
+    .btn-pay{background:var(--action-orange);color:#fff;border:none;padding:12px 20px;font-weight:800;font-size:14px;cursor:pointer;border-radius:8px;width:100%}
+
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);display:none;justify-content:center;align-items:center;z-index:999}
+    .modal-card{background:#fff;padding:22px;border-radius:10px;width:420px;max-width:92vw;box-shadow:0 12px 30px rgba(0,0,0,0.18);text-align:center}
+    .modal-btn{background:var(--action-orange);color:#fff;border:none;padding:10px 20px;border-radius:8px;font-weight:800;cursor:pointer;margin-top:12px}
+
+    @media (max-width:900px){
+      .bus-card-header{grid-template-columns:1fr 1fr;grid-auto-rows:auto}
+      .results-container{flex-direction:column}
+      .filters-sidebar{width:100%}
+      .search-form{grid-template-columns:repeat(auto-fit,minmax(140px,1fr));}
+      .bus-overlay{display:none}
+      .booking-widget{transform:none}
+      .payment-methods{grid-template-columns:1fr}
+    }
+
+    @media (max-width:520px){
+      .search-form{grid-template-columns:1fr}
+      .mod-input{flex-basis:100%}
+      .form-row{flex-direction:column}
+      .payment-methods{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <div class="utility-bar" role="region" aria-label="utility bar">
+    <div>Welcome to KSRTC — Demo | <i class="fas fa-phone-alt" aria-hidden="true"></i> +91-080-26252625</div>
+    <div><a href="#" style="color:inherit;text-decoration:none">Screen Reader Access</a> | <a href="#" style="color:inherit;text-decoration:none">Commuter Login</a></div>
+  </div>
+
+  <header class="main-header">
+    <div class="logo-section">
+      <img src="https://staticassetsksrtc.iamgds.com/images/ksrtc.in_logo15.png" alt="KSRTC logo" />
+    </div>
+    <div class="header-actions" aria-hidden="false">
+      <div class="action-item"><i class="fas fa-user-circle" aria-hidden="true"></i><span>Commuter Login</span></div>
+      <div class="action-item"><i class="fas fa-user-tie" aria-hidden="true"></i><span>Operator</span></div>
+      <div class="action-item"><i class="fas fa-envelope" aria-hidden="true"></i><span>Email</span></div>
+    </div>
+  </header>
+
+  <main>
+    <nav class="navbar" role="navigation" aria-label="main navigation">
+      <ul class="nav-links" role="list">
+        <li><a href="#" style="color:inherit;text-decoration:none">Home</a></li>
+        <li><a href="#" style="color:inherit;text-decoration:none">Booking Enquiry</a></li>
+        <li><a href="#" style="color:inherit;text-decoration:none">Cancel Ticket</a></li>
+      </ul>
+    </nav>
+
+    <section id="view-home" class="hero-section" aria-labelledby="home-heading">
+      <h1 id="home-heading" style="position:absolute;left:-9999px;top:auto">KSRTC Demo</h1>
+      <div class="hero-dimmer" aria-hidden="true"></div>
+      <div class="bus-overlay" aria-hidden="true"></div>
+
+      <div class="booking-widget" role="region" aria-label="booking widget">
+        <div class="widget-tabs" role="tablist" aria-label="booking types">
+          <div class="tab active" role="tab" aria-selected="true"><i class="fas fa-bus" aria-hidden="true"></i> Bus Ticket Booking</div>
+          <div class="tab" role="tab" aria-selected="false" style="background:#ddd;color:#555"><i class="fas fa-suitcase" aria-hidden="true"></i> Tours</div>
+        </div>
+
+        <div class="search-form" role="form" aria-label="search for buses">
+          <div class="input-group" id="originGroup">
+            <label for="originInput">Leaving From</label>
+            <input id="originInput" class="main-input" name="origin" placeholder="Enter City" value="Bangalore" aria-haspopup="listbox" aria-expanded="false" autocomplete="off" />
+            <div class="custom-dropdown-container" id="originList" role="listbox" aria-label="origin suggestions"></div>
+          </div>
+
+          <div class="input-group" id="destGroup">
+            <label for="destInput">Going To</label>
+            <input id="destInput" class="main-input" name="destination" placeholder="Enter City" value="Mysore" aria-haspopup="listbox" aria-expanded="false" autocomplete="off" />
+            <div class="custom-dropdown-container" id="destList" role="listbox" aria-label="destination suggestions"></div>
+          </div>
+
+          <div class="input-group">
+            <label for="dateInput">Date of Departure</label>
+            <input id="dateInput" class="main-input" name="date" type="date" value="2025-12-17" />
+          </div>
+
+          <button class="search-btn" id="searchBtn" type="button">Search Buses</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-results" aria-hidden="true">
+      <div class="modify-search-bar">
+        <div class="mod-input" id="res-route" aria-live="polite">Bangalore <i class="fas fa-arrow-right" aria-hidden="true"></i> Mysore</div>
+        <div class="mod-input" style="flex:0 0 200px;" id="res-date" aria-live="polite">Wed, 17 Dec 2025</div>
+        <button class="btn-modify" id="modifyBtn">MODIFY</button>
+      </div>
+
+      <div class="results-container">
+        <aside class="filters-sidebar" aria-label="filters">
+          <div class="filter-group">
+            <div class="filter-title">Journey Type <span style="color:var(--primary-blue);cursor:pointer">Clear</span></div>
+            <div class="filter-option"><i class="fas fa-bus" aria-hidden="true"></i> Direct Bus</div>
+            <div class="filter-option" style="opacity:0.5"><i class="fas fa-random" aria-hidden="true"></i> Connect Bus</div>
+          </div>
+          <div class="filter-group">
+            <div class="filter-title">Bus Type</div>
+            <div class="filter-option"><label><input type="checkbox" /> AC</label></div>
+            <div class="filter-option"><label><input type="checkbox" /> Non AC</label></div>
+            <div class="filter-option"><label><input type="checkbox" /> Sleeper</label></div>
+            <div class="filter-option"><label><input type="checkbox" /> Seater</label></div>
+          </div>
+          <div class="filter-group">
+            <div class="filter-title">Departure Time</div>
+            <div class="filter-option"><label><input type="checkbox" /> Before 10 AM</label></div>
+            <div class="filter-option"><label><input type="checkbox" /> 10 AM - 5 PM</label></div>
+            <div class="filter-option"><label><input type="checkbox" /> 5 PM - 11 PM</label></div>
+          </div>
+          <div class="filter-group">
+            <div class="filter-title">Price Range</div>
+            <input type="range" style="width:100%" min="100" max="2000" aria-label="price range" />
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin-top:6px;"><span>₹100</span><span>₹2000</span></div>
+          </div>
+        </aside>
+
+        <main class="results-feed" aria-live="polite">
+          <!-- Bus cards will be generated here dynamically -->
+        </main>
+      </div>
+    </section>
+
+    <!-- demo modal removed as requested: payment success will show inline -->
+  </main>
+
+  <script>
+    /* ----------------------
+       DEMO / SAFE INTERACTIONS
+       - sanitized: no IPs, no credential harvesting hints
+       - seat rendering clears before drawing (no duplicates)
+       ---------------------- */
+
+    // Data & state
+    // expanded list with more Karnataka stations to make the demo more realistic
+    const cities = [
+      "Bangalore","Mysore","Mangalore","Hubli","Dharwad","Belagavi","Davanagere",
+      "Chitradurga","Tumkur","Kolar","Hassan","Shivamogga","Udupi","Kundapura",
+      "Karwar","Bagalkot","Vijayapura","Mandya","Chamarajanagar","Raichur","Kalaburagi",
+      "Bidar","Haveri","Gulbarga","Brahmavara","Adoni","Shimoga","Sakleshpur","Kadur",
+      "Tiptur","Sira","Kudremukh","Puttur","Sirsi","Kundapura"
+    ];
+    // demo defaults
+    let selectedSeatsByBus = {}; // {busId: [seatNums]}
+    const defaultSeatPrice = 499; // lowered price as requested
+
+    // Elements
+    const originInput = document.getElementById('originInput');
+    const destInput = document.getElementById('destInput');
+    const originList = document.getElementById('originList');
+    const destList = document.getElementById('destList');
+    const searchBtn = document.getElementById('searchBtn');
+    const viewHome = document.getElementById('view-home');
+    const viewResults = document.getElementById('view-results');
+    const resRoute = document.getElementById('res-route');
+    const resDate = document.getElementById('res-date');
+    // demo modal removed; no modal elements present
+    const modifyBtn = document.getElementById('modifyBtn');
+    const resultsFeed = document.querySelector('.results-feed');
+
+    /* ----------------------
+       Dropdown helpers (keyboard accessible)
+       ---------------------- */
+    function populateDropdown(listEl, inputEl) {
+      listEl.innerHTML = '';
+      cities.forEach((city, idx) => {
+        const item = document.createElement('div');
+        item.className = 'city-option';
+        item.setAttribute('role', 'option');
+        item.setAttribute('tabindex', '0');
+        item.innerText = city;
+        item.addEventListener('click', () => {
+          inputEl.value = city;
+          listEl.style.display = 'none';
+          inputEl.setAttribute('aria-expanded', 'false');
+        });
+        item.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            item.click();
+          }
+        });
+        listEl.appendChild(item);
+      });
+      listEl.style.display = 'block';
+      inputEl.setAttribute('aria-expanded', 'true');
+    }
+
+    function toggleDropdownFor(id) {
+      const list = id === 'originList' ? originList : destList;
+      const input = id === 'originList' ? originInput : destInput;
+      // if already open, close
+      if (list.style.display === 'block') {
+        list.style.display = 'none';
+        input.setAttribute('aria-expanded', 'false');
+        return;
+      }
+      // otherwise populate & show
+      populateDropdown(list, input);
+    }
+
+    // clicking the inputs opens dropdown
+    originInput.addEventListener('focus', () => toggleDropdownFor('originList'));
+    originInput.addEventListener('click', () => toggleDropdownFor('originList'));
+    destInput.addEventListener('focus', () => toggleDropdownFor('destList'));
+    destInput.addEventListener('click', () => toggleDropdownFor('destList'));
+
+    // close dropdowns when clicking outside
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.input-group')) {
+        document.querySelectorAll('.custom-dropdown-container').forEach(el => {
+          el.style.display = 'none';
+          const control = el === originList ? originInput : destInput;
+          control.setAttribute('aria-expanded', 'false');
+        });
+      }
+    });
+
+    // basic keyboard navigation: ESC closes dropdown
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.custom-dropdown-container').forEach(el => el.style.display = 'none');
+        originInput.setAttribute('aria-expanded', 'false');
+        destInput.setAttribute('aria-expanded', 'false');
+      }
+    });
+
+    /* ----------------------
+       Transition to results (safe)
+       ---------------------- */
+    searchBtn.addEventListener('click', () => {
+      const origin = originInput.value || 'Bangalore';
+      const dest = destInput.value || 'Mysore';
+      const date = document.getElementById('dateInput').value || new Date().toISOString().slice(0,10);
+
+      resRoute.innerHTML = `${escapeHtml(origin)} <i class="fas fa-arrow-right" aria-hidden="true"></i> ${escapeHtml(dest)}`;
+      resDate.innerText = new Date(date).toDateString();
+
+      viewHome.style.display = 'none';
+      viewResults.style.display = 'block';
+      viewResults.setAttribute('aria-hidden', 'false');
+
+      // generate demo buses and render them
+      const buses = generateBuses(origin, dest);
+      renderBuses(buses);
+    });
+
+    // Modify button reloads page (safe way to go back to search)
+    modifyBtn.addEventListener('click', () => {
+      window.location.reload();
+    });
+
+    /* ----------------------
+       Seat rendering & selection
+       ---------------------- */
+    // generate more realistic seat layout: two decks with 40 seats (1-20 lower, 21-40 upper)
+    function makeRows(start, end, perRow) {
+      const rows = [];
+      let row = [];
+      for (let i = start; i <= end; i++) {
+        row.push(i);
+        if (row.length === perRow) {
+          rows.push(row);
+          row = [];
+        }
+      }
+      if (row.length) rows.push(row);
+      return rows;
+    }
+
+    const lowerConfig = makeRows(1, 20, 4);
+    const upperConfig = makeRows(21, 40, 4);
+
+    // some seats are mocked as booked (demo) across both decks
+    const demoBooked = new Set([3,4,9,10,16,22,27,35,36]);
+
+    // Render seats for a specific bus into its containers
+    function renderSeatsForBus(bus) {
+      const lowerContainer = document.getElementById(`lower-deck-${bus.id}`);
+      const upperContainer = document.getElementById(`upper-deck-${bus.id}`);
+      if (!lowerContainer || !upperContainer) return;
+      lowerContainer.innerHTML = '';
+      upperContainer.innerHTML = '';
+      selectedSeatsByBus[bus.id] = selectedSeatsByBus[bus.id] || [];
+
+      function createRow(nums) {
+        const rowDiv = document.createElement('div');
+        rowDiv.className = 'seat-row';
+        nums.forEach(num => {
+          const seat = document.createElement('div');
+          seat.className = 'seat';
+          seat.innerText = num;
+          if ((bus.booked && bus.booked.has(num)) || demoBooked.has(num)) {
+            seat.classList.add('booked');
+            seat.setAttribute('aria-disabled', 'true');
+          } else {
+            seat.classList.add('available');
+            seat.setAttribute('role', 'button');
+            seat.setAttribute('tabindex', '0');
+            seat.addEventListener('click', () => toggleSeatForBus(bus.id, num, seat));
+            seat.addEventListener('keydown', (e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                toggleSeatForBus(bus.id, num, seat);
+              }
+            });
+          }
+          rowDiv.appendChild(seat);
+        });
+        return rowDiv;
+      }
+
+      lowerConfig.forEach(row => lowerContainer.appendChild(createRow(row)));
+      upperConfig.forEach(row => upperContainer.appendChild(createRow(row)));
+      updateFooterForBus(bus.id);
+    }
+
+    function toggleSeatForBus(busId, num, el) {
+      const selected = selectedSeatsByBus[busId] || [];
+      if (el.classList.contains('booked')) return;
+      if (selected.includes(num)) {
+        selectedSeatsByBus[busId] = selected.filter(s => s !== num);
+        el.classList.remove('selected');
+      } else {
+        if (selected.length >= 6) { alert('You can select up to 6 seats in demo.'); return; }
+        selected.push(num);
+        el.classList.add('selected');
+      }
+      selectedSeatsByBus[busId] = selected;
+      updateFooterForBus(busId);
+    }
+
+    function updateFooterForBus(busId) {
+      const selText = document.getElementById(`selected-seats-text-${busId}`);
+      const totalEl = document.getElementById(`total-price-${busId}`);
+      const busPrice = document.getElementById(`price-tag-${busId}`)?.dataset?.price || defaultSeatPrice;
+      const selected = selectedSeatsByBus[busId] || [];
+      if (selText) selText.innerText = selected.length ? selected.join(', ') : '-';
+      if (totalEl) totalEl.innerText = selected.length * Number(busPrice);
+    }
+
+    /* ----------------------
+       Render multiple buses & wire interactions
+       ---------------------- */
+    function generateBuses(origin, dest) {
+      // create a few demo buses with varied prices (lowered)
+      const buses = [];
+      for (let i = 0; i < 5; i++) {
+        const id = `b${Date.now().toString().slice(-4)}${i}`;
+        const price = [299, 349, 399, 449, 499][i % 5];
+        buses.push({
+          id,
+          code: `KSRTC-${100 + i}`,
+          type: i % 2 === 0 ? 'AC SEATER' : 'NON AC SLEEPER',
+          depTime: `${6 + i}:00`,
+          depStation: origin,
+          arrTime: `${12 + i}:30`,
+          arrStation: dest,
+          duration: `${6 + i}h ${30}m`,
+          price,
+          seatsLeft: 40 - (i * 3),
+          booked: new Set([2 + i, 5 + i, 11 + i])
+        });
+      }
+      return buses;
+    }
+
+    function renderBuses(buses) {
+      resultsFeed.innerHTML = '';
+      buses.forEach(bus => {
+        const card = document.createElement('article');
+        card.className = 'bus-card';
+        card.id = `bus-card-${bus.id}`;
+
+        const header = document.createElement('div');
+        header.className = 'bus-card-header';
+        header.innerHTML = `
+          <div>
+            <div class="bus-title">${bus.code} <i class="fas fa-external-link-alt" style="font-size:10px" aria-hidden="true"></i></div>
+            <div class="bus-type">${bus.type}</div>
+          </div>
+          <div>
+            <div class="time-loc">${bus.depTime}</div>
+            <div class="time-date">${bus.depStation}</div>
+          </div>
+          <div>
+            <div class="duration-line">${bus.duration}</div>
+            <div style="text-align:center;font-size:18px;color:#ccc">&#10230;</div>
+          </div>
+          <div>
+            <div class="time-loc">${bus.arrTime}</div>
+            <div class="time-date">${bus.arrStation}</div>
+          </div>
+          <div>
+            <div class="price-tag" id="price-tag-${bus.id}" data-price="${bus.price}">₹ ${bus.price}</div>
+            <div class="seats-left">${bus.seatsLeft} Seats</div>
+            <button class="btn-select-seat" id="toggle-seat-${bus.id}" aria-controls="seat-area-${bus.id}" aria-expanded="false">Select Berth</button>
+          </div>
+        `;
+
+        const seatArea = document.createElement('div');
+        seatArea.className = 'seat-selection-area';
+        seatArea.id = `seat-area-${bus.id}`;
+        seatArea.setAttribute('aria-hidden','true');
+        seatArea.innerHTML = `
+          <div style="margin-bottom:10px;font-weight:700;color:#555;"><span style="background:var(--highlight-cyan);color:#fff;padding:4px 7px;border-radius:50%;font-size:12px">1</span> Select Seat</div>
+          <div class="seat-layout-grid">
+            <div class="berth-container" aria-label="lower berth">
+              <div class="steering-wheel" aria-hidden="true"><i class="fas fa-dharmachakra"></i></div>
+              <div class="berth-label">LOWER BERTH</div>
+              <div class="bus-deck" id="lower-deck-${bus.id}" role="group" aria-label="lower deck seats"></div>
+            </div>
+            <div class="berth-container" aria-label="upper berth">
+              <div class="berth-label">UPPER BERTH</div>
+              <div class="bus-deck" id="upper-deck-${bus.id}" role="group" aria-label="upper deck seats"></div>
+            </div>
+          </div>
+          <div style="display:flex;gap:12px;margin-top:12px;font-size:12px">
+            <div style="display:flex;align-items:center;gap:6px"><div style="width:12px;height:12px;background:#fff;border:1px solid #28a745"></div> Available</div>
+            <div style="display:flex;align-items:center;gap:6px"><div style="width:12px;height:12px;background:#ccc"></div> Booked</div>
+            <div style="display:flex;align-items:center;gap:6px"><div style="width:12px;height:12px;background:var(--primary-blue)"></div> Selected</div>
+            <div style="display:flex;align-items:center;gap:6px"><div style="width:12px;height:12px;border:1px solid #e91e63"></div> Female</div>
+          </div>
+          <hr style="margin:16px 0;border:0;border-top:1px solid #ddd">
+          <div class="logistics-panel">
+            <div style="margin-bottom:10px;font-weight:700;color:#555"><span style="background:var(--highlight-cyan);color:#fff;padding:4px 7px;border-radius:50%;font-size:12px">2</span> Select Pickup & Dropoff</div>
+            <label for="boarding-${bus.id}" style="display:block;font-size:12px;color:#666;margin-bottom:6px">Boarding Point</label>
+            <select class="dropdown-select" id="boarding-${bus.id}" aria-label="select boarding point">
+              <option>Select Boarding Point</option>
+              <option value="${bus.depStation}">${bus.depTime} ${bus.depStation}</option>
+            </select>
+            <label for="dropping-${bus.id}" style="display:block;font-size:12px;color:#666;margin-bottom:6px">Dropping Point</label>
+            <select class="dropdown-select" id="dropping-${bus.id}" aria-label="select dropping point">
+              <option>Select Dropping Point</option>
+              <option value="${bus.arrStation}">${bus.arrTime} ${bus.arrStation}</option>
+            </select>
+          </div>
+          <div class="selection-footer">
+            <div>
+              <div style="font-size:12px;color:#666">Seat No(s): <span id="selected-seats-text-${bus.id}" style="font-weight:700;color:#111">-</span></div>
+              <div class="total-price">Grand Total: ₹ <span id="total-price-${bus.id}">0</span></div>
+            </div>
+            <button class="btn-proceed" id="proceed-btn-${bus.id}" type="button">Provide Passenger Details</button>
+          </div>
+          <div class="customer-details-panel" id="cust-details-${bus.id}" aria-hidden="true">
+            <h3 style="font-size:16px;margin-bottom:12px">Passenger Details (Demo)</h3>
+            <div class="auth-toggle" role="radiogroup" aria-label="authentication mode">
+              <label><input type="radio" name="auth-mode-${bus.id}" value="guest" checked> Continue As Guest</label>
+              <label><input type="radio" name="auth-mode-${bus.id}" value="login"> Login</label>
+            </div>
+            <form method="POST" action="/demo-checkout" onsubmit="return handlePassengerDetails(event, '${bus.id}')">
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Passenger Name</label>
+                  <input name="passenger_name" required placeholder="Full name" />
+                </div>
+                <div class="form-group">
+                  <label>Mobile Number</label>
+                  <input name="passenger_mobile" required placeholder="Mobile number" />
+                </div>
+              </div>
+              <div style="font-size:12px;color:#666;margin-bottom:10px">This is a demo checkout — no credentials are stored.</div>
+              <button type="submit" class="btn-proceed" style="width:100%">PROCEED TO PAYMENT</button>
+            </form>
+          </div>
+          <div class="payment-page" id="payment-page-${bus.id}" aria-hidden="true">
+            <h3 style="font-size:16px;margin-bottom:12px">Payment Details</h3>
+            <div class="payment-summary">
+              <div class="summary-row">
+                <span>Bus: <strong>${bus.code}</strong></span>
+                <span id="summary-price-${bus.id}">₹${bus.price}</span>
+              </div>
+              <div class="summary-row">
+                <span>Seats: <span id="summary-seats-${bus.id}">-</span></span>
+              </div>
+              <div class="summary-row">
+                <span>Total:</span>
+                <span id="summary-total-${bus.id}">₹0</span>
+              </div>
+            </div>
+            <div style="margin-bottom:14px;">
+              <label style="font-size:13px;font-weight:700;color:#333;display:block;margin-bottom:10px">Select Payment Method</label>
+              <div class="payment-methods" id="payment-methods-${bus.id}">
+                <div class="payment-method active" data-method="upi" onclick="selectPaymentMethod(this, '${bus.id}')">
+                  <i class="fas fa-mobile-alt"></i>
+                  <div class="payment-method-label">UPI</div>
+                </div>
+              </div>
+            </div>
+            <div class="billing-section" id="billing-upi-${bus.id}" style="display:block;text-align:center;">
+              <h4>Scan to Pay (UPI)</h4>
+              <div style="margin-top:8px;">
+                <img class="upi-qr" src="assests/WhatsApp%20Image%202025-11-27%20at%2001.12.29_d8afe06d.jpg" alt="UPI QR code" />
+                <div style="font-size:13px;color:#666;margin-top:8px">Open your UPI app and scan the QR code to pay.</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:10px;margin-top:14px;">
+              <button class="btn-proceed" style="flex:1;background:#999" id="back-btn-${bus.id}" onclick="backToPassengerDetails('${bus.id}')">Back</button>
+              <button class="btn-pay" id="pay-btn-${bus.id}">Pay ₹<span id="pay-amount-${bus.id}">0</span></button>
+            </div>
+          </div>
+        `;
+
+        card.appendChild(header);
+        card.appendChild(seatArea);
+        resultsFeed.appendChild(card);
+
+        // wire up toggle and proceed buttons
+        document.getElementById(`toggle-seat-${bus.id}`).addEventListener('click', () => {
+          const area = document.getElementById(`seat-area-${bus.id}`);
+          const btn = document.getElementById(`toggle-seat-${bus.id}`);
+          if (area.style.display === 'block') { area.style.display = 'none'; btn.innerText = 'Select Berth'; btn.setAttribute('aria-expanded','false'); }
+          else { area.style.display = 'block'; btn.innerText = 'Close chart'; btn.setAttribute('aria-expanded','true'); }
+        });
+
+        document.getElementById(`proceed-btn-${bus.id}`).addEventListener('click', () => {
+          const selected = selectedSeatsByBus[bus.id] || [];
+          if (selected.length === 0) { alert('Please select at least one seat.'); return; }
+          const panel = document.getElementById(`cust-details-${bus.id}`);
+          panel.style.display = 'block'; panel.setAttribute('aria-hidden','false'); panel.scrollIntoView({behavior:'smooth'});
+        });
+
+        // wire up payment button
+        document.getElementById(`pay-btn-${bus.id}`).addEventListener('click', () => {
+          const selected = selectedSeatsByBus[bus.id] || [];
+          const totalPrice = selected.length * defaultSeatPrice;
+          // demo: show inline success banner instead of modal
+          showPaymentSuccess(bus.id);
+        });
+
+        // render seats for this bus now
+        renderSeatsForBus(bus);
+      });
+    }
+
+    /* ----------------------
+       Demo checkout handler (prevents credential capture)
+       - Shows in-page modal instead of sending credentials to unknown service
+       ---------------------- */
+    function handlePassengerDetails(e, busId) {
+      e.preventDefault(); // prevent actual navigation for demo
+      const form = e.target;
+      const name = (form.querySelector('[name="passenger_name"]')?.value || '').trim();
+      const mobile = (form.querySelector('[name="passenger_mobile"]')?.value || '').trim();
+      if (!name || !mobile) { alert('Please provide passenger name and mobile number.'); return false; }
+      // show payment page instead
+      const custPanel = document.getElementById(`cust-details-${busId}`);
+      const paymentPage = document.getElementById(`payment-page-${busId}`);
+      const selected = selectedSeatsByBus[busId] || [];
+      const totalPrice = selected.length * defaultSeatPrice;
+      
+      custPanel.style.display = 'none';
+      custPanel.setAttribute('aria-hidden', 'true');
+      paymentPage.style.display = 'block';
+      paymentPage.setAttribute('aria-hidden', 'false');
+      
+      // update payment summary
+      document.getElementById(`summary-seats-${busId}`).innerText = selected.join(', ');
+      document.getElementById(`summary-total-${busId}`).innerText = `₹${totalPrice}`;
+      document.getElementById(`pay-amount-${busId}`).innerText = totalPrice;
+      
+      paymentPage.scrollIntoView({behavior:'smooth'});
+      return false;
+    }
+
+    function selectPaymentMethod(el, busId) {
+      // Remove active from all methods safely
+      document.querySelectorAll(`#payment-methods-${busId} .payment-method`).forEach(m => {
+        m.classList.remove('active');
+        const methodId = m.dataset.method;
+        const billEl = document.getElementById(`billing-${methodId}-${busId}`);
+        if (billEl) billEl.style.display = 'none';
+      });
+      // Set selected method active and show its form (if present)
+      el.classList.add('active');
+      const selectedMethod = el.dataset.method;
+      const showEl = document.getElementById(`billing-${selectedMethod}-${busId}`);
+      if (showEl) showEl.style.display = 'block';
+    }
+
+    function backToPassengerDetails(busId) {
+      const custPanel = document.getElementById(`cust-details-${busId}`);
+      const paymentPage = document.getElementById(`payment-page-${busId}`);
+      paymentPage.style.display = 'none';
+      paymentPage.setAttribute('aria-hidden', 'true');
+      custPanel.style.display = 'block';
+      custPanel.setAttribute('aria-hidden', 'false');
+      custPanel.scrollIntoView({behavior:'smooth'});
+    }
+
+    function showPaymentSuccess(busId) {
+      const paymentPage = document.getElementById(`payment-page-${busId}`);
+      if (!paymentPage) return;
+      // clear payment UI and show inline success message
+      const banner = document.createElement('div');
+      banner.className = 'payment-success';
+      banner.style.background = '#e8ffef';
+      banner.style.border = '1px solid #c8f3d1';
+      banner.style.padding = '12px';
+      banner.style.borderRadius = '8px';
+      banner.style.marginBottom = '12px';
+      banner.innerHTML = `<strong style="color:#28a745">✓ Payment successful</strong><div style="color:#333;margin-top:6px">Your demo booking is confirmed. This is a safe demo; no payment was processed.</div>`;
+      // prepend banner
+      paymentPage.insertBefore(banner, paymentPage.firstChild);
+
+      // disable pay button
+      const payBtn = document.getElementById(`pay-btn-${busId}`);
+      if (payBtn) { payBtn.disabled = true; payBtn.style.opacity = '0.6'; }
+
+      // reset selection for this bus to avoid lingering state
+      selectedSeatsByBus[busId] = [];
+      updateFooterForBus(busId);
+    }
+
+    /* ----------------------
+       Login toggle (guest vs login) - demo only
+       ---------------------- */
+    function toggleLogin(isLogin) {
+      // For demo, no credential fields are required. Safe no-op if field not present.
+      const passField = document.querySelector('[name="passenger_mobile"]');
+      if (!passField) return;
+      passField.placeholder = isLogin ? 'Enter registered mobile number' : 'Mobile number';
+    }
+
+    // small helper to escape HTML when injecting user values
+    function escapeHtml(unsafe) {
+      return String(unsafe)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    // Initialize: nothing to render until user searches; but pre-populate dropdowns
+
+    // Optional: keyboard shortcut (S) to focus search (accessible demo)
+    document.addEventListener('keydown', (e) => {
+      if (e.key.toLowerCase() === 's' && !e.altKey && !e.ctrlKey && !e.metaKey) {
+        originInput.focus();
+      }
+    });
+  </script>
+</body>
+</html>
